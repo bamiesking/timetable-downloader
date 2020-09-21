@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block nav %}
+{% include 'timetable/nav.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-10 offset-1 col-md-5 offset-md-1">
+    <div class="text-left">
+      <h1 class="mt-5">How your data is used</h1>
+      <p>When you submit your CIS username and password, the timetable tool makes a direct query (HTTPS GET) to the CIS timetable website. This is a secure request, and your password is not ever stored on my server.</p>
+      <p>The server hosting this site abides by industry security standards. </p>
+      <p>CIS usernames are anonymously stored in salted-hashed form in order to track unique users of the tool. This file is not publicly accessible and will never be shared. No other data is recorded, and the .ics files generated are deleted daily.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

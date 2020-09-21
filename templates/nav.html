@@ -1,0 +1,10 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="{{ url_for('timetable.index') }}">{{ title }}     <span class="text-danger">Alpha</span></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <span class="mx-auto text-light">Timetables downloaded: {{ count }}</span>
+      <a class="ml-auto" href="https://monzo.me/bamiesking/1.00?d=Durham%20Timetable%20Downloader"><button class="btn btn-info">Support me</button></a>
+    </div>
+</nav>

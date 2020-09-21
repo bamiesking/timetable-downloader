@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% from "_formhelpers.html" import render_field %}
+
+{% block nav %}
+{% include 'timetable/nav.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-10 offset-1 col-md-5 offset-md-1">
+    <div class="text-left">
+      <h1 class="mt-5">Download your Durham Timetable</h1>
+      <p class="lead">Select your modules in order to download calendar events for your contact hours.</p>
+      <p>Once your timetable information has been retrieved and processed, you will be asked to download a .ics file. Click <a href="{{ url_for('timetable.help') }}">here</a> for more information on how to use this file.</p>
+      <p>Passwords are not stored, and usernames are anonymously recorded in order to count unique users. Click <a href="{{ url_for('timetable.privacy') }}">here</a> to read more about privacy.</p>
+    </div>
+  </div>
+  <div class="col-10 offset-1 col-md-5 offset-md-0 mt-md-5">
+    <form action="{{ url_for('timetable.download') }}" method="POST">
+      {% if auth %}
+      <div class="alert alert-danger" role="alert">
+        Incorrect login
+      </div>
+      {% endif %}
+      <div class="form-group">
+        <label for="user">CIS Username</label>
+        <input class="form-control" name="user" placeholder="Enter username">
+      </div>
+      <div class="form-group">
+        <label for="pass">CIS Password</label>
+        <input type="password" class="form-control" name="pass" placeholder="Enter password">
+      </div>
+      <div class="form-group">
+        <label for="modules">Modules</label>
+        <select multiple class="form-control select" id="modules" placeholder="Select modules" name="modules">
+          {% include 'timetable/modules.html' %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="terms">Terms</label>
+        <select multiple class="form-control" id="terms" placeholder="Select terms" name="terms">
+          <option value="mi">Michaelmas</option>
+          <option value="ep">Epiphany</option>
+          <option value="ea">Easter</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <button type="submit" class="btn btn-primary text-center mt-3">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

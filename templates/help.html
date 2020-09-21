@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+.list-group-item:last-child {
+  border-bottom: 1px solid rgba(0,0,0,0.125);
+}
+</style>
+{% endblock %}
+
+{% block nav %}
+{% include 'timetable/nav.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-10 offset-1 col-md-5 offset-md-1">
+    <div class="text-left">
+      <h1 class="mt-5">Using .ics files</h1>
+      <p>All good calendar apps allow you to import events from a .ics file. If you have a default calendar app, then simply opening the .ics file will begin the process of importing the events to your calendar. </p>
+      <p>For specific instructions, see the list <span class="d-none d-md-inline">to the right</span><span class="d-inline d-md-none">below</span>.</p>
+    </div>
+  </div>
+  <div class="col-10 offset-1 col-md-5 offset-md-0 mt-md-5">
+    <div class="text-left">
+      <ul class="list-group">
+        <a href="https://support.apple.com/en-gb/guide/calendar/icl1023/mac#icl669ab603f" class="list-group-item list-group-item-action">iCalendar</a>
+        <a href="https://support.google.com/calendar/thread/3231927?hl=en" class="list-group-item list-group-item-action">Google Calendar</a>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

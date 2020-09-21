@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash
 from .forms import TimetableForm
 from .methods import generate_calendar, AuthError
 
-bp = Blueprint('timetable', __name__)
+bp = Blueprint('timetable', __name__, template_folder='templates')
 
 @bp.route("/")
 def index():
