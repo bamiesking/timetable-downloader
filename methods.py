@@ -24,16 +24,20 @@ event = {
 
 day_index = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 
+
 def request(modules, terms, login):
-	module_string = str(modules).replace('\', \'', '%0D%0A').replace('[\'', '').replace('\']', '')
-	terms_string = '' + ('12-21;' if 'mi' in terms else '') + ('26-35;' if 'ep' in terms else '') + ('41-49' if 'ea' in terms else '')
-	#url = 'https://timetable.dur.ac.uk/reporting/individual;module;name;{0}?days=1-5&weeks={1}&periods=5-41&template=module+individual&height=100&week=100'.format(module_string, '12-21;26-35;41-49')
-	url = 'https://timetable.dur.ac.uk/reporting/individual;module;name;ANTH1041%0D%0AANTH1061%0D%0A?days=1-5&weeks=12-21;26-35;41-49&periods=5-41&template=module+individual&height=100&week=100'
-	page = requests.get(url, auth=(login['user'], login['pass']))
-	if '<title>401 Unauthorized</title>' in page.text:
-		raise AuthError('Bad login')
-	soup = BeautifulSoup(page.text, 'html.parser')
-	return soup
+    module_separator = '%0D%0A'
+    #module_string = str(modules).replace('\', \'', '%0D%0A').replace('[\'', '').replace('\']', '')
+    module_string = module_separator.join(modules) + module_separator
+    terms_string = '' + ('12-21;' if 'mi' in terms else '') + ('26-35;' if 'ep' in terms else '') + ('41-49' if 'ea' in terms else '')
+    url = 'https://timetable.dur.ac.uk/reporting/individual;module;name;{0}?days=1-5&weeks={1}&periods=5-41&template=module+individual&height=100&week=100'.format(module_string, '12-21;26-35;41-49')
+    #url = 'https://timetable.dur.ac.uk/reporting/individual;module;name;PHYS4121%0D%0APHYS4141%0D%0APHYS4181%0D%0A?days=1-5&weeks=12-21&periods=5-41&template=module+individual&height=100&week=100'
+    #url = 'https://timetable.dur.ac.uk/reporting/individual;module;name;ANTH1041%0D%0AANTH1061%0D%0A?days=1-5&weeks=12-21;26-35;41-49&periods=5-41&template=module+individual&height=100&week=100'
+    page = requests.get(url, auth=(login['user'], login['pass']))
+    if '<title>401 Unauthorized</title>' in page.text:
+        raise AuthError('Bad login')
+    soup = BeautifulSoup(page.text, 'html.parser')
+    return soup
 
 def parse_weeks(weeks_raw):
 	weeks = []
@@ -108,47 +112,47 @@ def retrieve(modules, terms, login):
 	return events
 
 def find_datetime(week, day, time):
-	weeks = {
-		'11': datetime(year = 2019, month = 9,  day = 30),
-		'12': datetime(year = 2019, month = 10,  day = 7),
-		'13': datetime(year = 2019, month = 10, day = 14),
-		'14': datetime(year = 2019, month = 10, day = 21),
-		'15': datetime(year = 2019, month = 10, day = 28),
-		'16': datetime(year = 2019, month = 11,  day = 4),
-		'17': datetime(year = 2019, month = 11, day = 11),
-		'18': datetime(year = 2019, month = 11, day = 18),
-		'19': datetime(year = 2019, month = 11, day = 25),
-		'20': datetime(year = 2019, month = 12,  day = 2),
-		'21': datetime(year = 2019, month = 12,  day = 9),
-		'22': datetime(year = 2019, month = 12, day = 16),
-		'23': datetime(year = 2019, month = 12, day = 23),
-		'24': datetime(year = 2019, month = 12, day = 30),
-		'25': datetime(year = 2020, month = 1,   day = 6),
-		'26': datetime(year = 2020, month = 1,  day = 13),
-		'27': datetime(year = 2020, month = 1,  day = 20),
-		'28': datetime(year = 2020, month = 1,  day = 27),
-		'29': datetime(year = 2020, month = 2,   day = 3),
-		'30': datetime(year = 2020, month = 2,  day = 10),
-		'31': datetime(year = 2020, month = 2,  day = 17),
-		'32': datetime(year = 2020, month = 2,   day =24),
-		'33': datetime(year = 2020, month = 3,   day = 2),
-		'34': datetime(year = 2020, month = 3,   day = 9),
-		'35': datetime(year = 2020, month = 3,  day = 16),
-		'36': datetime(year = 2020, month = 3,  day = 23),
-		'37': datetime(year = 2020, month = 3,  day = 30),
-		'38': datetime(year = 2020, month = 4,   day = 6),
-		'39': datetime(year = 2020, month = 4,  day = 13),
-		'40': datetime(year = 2020, month = 4,  day = 20),
-		'41': datetime(year = 2020, month = 4,  day = 27),
-		'42': datetime(year = 2020, month = 5,   day = 4),
-		'43': datetime(year = 2020, month = 5,  day = 11),
-		'44': datetime(year = 2020, month = 5,  day = 18),
-		'45': datetime(year = 2020, month = 5,  day = 25),
-		'46': datetime(year = 2020, month = 6,   day = 1),
-		'47': datetime(year = 2020, month = 6,   day = 8),
-		'48': datetime(year = 2020, month = 6,   day = 15),
-		'49': datetime(year = 2020, month = 6,   day = 22),
-		'50': datetime(year = 2020, month = 6,   day = 29)
+    weeks = {
+        '1': datetime(year = 2020, month = 7,  day = 20),
+        '2': datetime(year = 2020, month = 7,  day = 27),
+        '3': datetime(year = 2020, month = 8, day = 3),
+        '4': datetime(year = 2020, month = 8, day = 10),
+        '5': datetime(year = 2020, month = 8, day = 17),
+        '6': datetime(year = 2020, month = 8,  day = 24),
+        '7': datetime(year = 2020, month = 8, day = 31),
+        '8': datetime(year = 2020, month = 9, day = 7),
+        '9': datetime(year = 2020, month = 9, day = 14),
+        '10': datetime(year = 2020, month = 9,  day = 21),
+        '11': datetime(year = 2020, month = 9,  day = 28),
+        '12': datetime(year = 2020, month = 10,  day = 5),
+        '13': datetime(year = 2020, month = 10, day = 12),
+        '14': datetime(year = 2020, month = 10, day = 19),
+        '15': datetime(year = 2020, month = 10, day = 26),
+        '16': datetime(year = 2020, month = 11,  day = 2),
+        '17': datetime(year = 2020, month = 11, day = 9),
+        '18': datetime(year = 2020, month = 11, day = 16),
+        '19': datetime(year = 2020, month = 11, day = 23),
+        '20': datetime(year = 2020, month = 11,  day = 30),
+        '21': datetime(year = 2020, month = 12,  day = 7),
+        '22': datetime(year = 2020, month = 12, day = 14),
+        '23': datetime(year = 2020, month = 12, day = 21),
+        '24': datetime(year = 2020, month = 12, day = 28),
+        '25': datetime(year = 2021, month = 1,   day = 4),
+        '26': datetime(year = 2021, month = 1,  day = 11),
+        '27': datetime(year = 2021, month = 1,  day = 18),
+        '28': datetime(year = 2021, month = 1,  day = 25),
+        '29': datetime(year = 2021, month = 2,   day = 1),
+        '30': datetime(year = 2021, month = 2,  day = 8),
+        '31': datetime(year = 2021, month = 2,  day = 15),
+        '32': datetime(year = 2021, month = 2,   day =22),
+        '33': datetime(year = 2021, month = 3,   day = 1),
+        '34': datetime(year = 2021, month = 3,   day = 8),
+        '35': datetime(year = 2021, month = 3,  day = 15),
+        '36': datetime(year = 2021, month = 3,  day = 22),
+        '37': datetime(year = 2021, month = 3,  day = 29),
+        '38': datetime(year = 2021, month = 4,   day = 5),
+        '39': datetime(year = 2021, month = 4,  day = 12),
+        '40': datetime(year = 2021, month = 4,  day = 19),
 	}
 
 	offset = {
