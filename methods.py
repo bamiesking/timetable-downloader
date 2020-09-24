@@ -6,20 +6,20 @@ from ics import Calendar, Event
 
 
 class AuthError(Exception):
-	pass
+    pass
 
 events = []
 
 # DEFINE EVENT STRUCTURE TEMPLATE
 event = {
-	'day': 'Mon',
-	'time': '13:00',
-	'weeks': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-	'module': 'ANTH1041',
-	'type': 'LECT',
-	'title': 'Health, Illness and Society',
-	'staff': 'Bentley, Prof G, Rickard, Dr I, Russell, Dr A J',
-	'location': 'D/D110'
+    'day': 'Mon',
+    'time': '13:00',
+    'weeks': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    'module': 'ANTH1041',
+    'type': 'LECT',
+    'title': 'Health, Illness and Society',
+    'staff': 'Bentley, Prof G, Rickard, Dr I, Russell, Dr A J',
+    'location': 'D/D110'
 }
 
 day_index = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
@@ -39,77 +39,89 @@ def request(modules, terms, login):
     soup = BeautifulSoup(page.text, 'html.parser')
     return soup
 
+
 def parse_weeks(weeks_raw):
-	weeks = []
-	weeks_raw = weeks_raw.split(', ')
-	for entry in weeks_raw:
-		if '-' in entry:
-			entry = entry.split('-')
-			weeks.extend(range(int(entry[0]), int(entry[1])))
-		else:
-			weeks.append(entry)
-	return weeks
+    weeks = []
+    weeks_raw = weeks_raw.split(', ')
+    for entry in weeks_raw:
+        if '-' in entry:
+            entry = entry.split('-')
+            weeks.extend(range(int(entry[0]), int(entry[1])))
+        else:
+            weeks.append(entry)
+    return weeks
+
 
 def retrieve(modules, terms, login):
-	soup = request(modules, terms, login)
-	modules = str(soup).split('<hr/>')[:-1]
-	for i in range(len(modules)):
-		modules[i] = BeautifulSoup(modules[i].split('<!-- START ROW OUTPUT -->')[1].split('<!-- END ROW OUTPUT -->')[0], 'html.parser')
-		days = [[], [], [], [], []]
-		day = -1
-		for row in modules[i].find_all('tr', recursive=False):
-			for cell in row.find_all('td', recursive=False):
-				if '<td bgcolor="#800080"' in str(cell):
-					day += 1
-				else:
-					days[day].append(cell)
+    soup = request(modules, terms, login)
+    modules = str(soup).split('<hr/>')[:-1]
+    for i in range(len(modules)):
+        modules[i] = BeautifulSoup(modules[i].split('<!-- START ROW OUTPUT -->')[1].split('<!-- END ROW OUTPUT -->')[0], 'html.parser')
+        days = [[], [], [], [], []]
+        day = -1
+        for row in modules[i].find_all('tr', recursive=False):
+            for cell in row.find_all('td', recursive=False):
+                if '<td bgcolor="#800080"' in str(cell):
+                    day += 1
+                else:
+                    days[day].append(cell)
 
-		d = 0
-		for day in days:
-			s = 0
-			for slot in day:
-				slot = BeautifulSoup(str(slot), 'html.parser')
-				content = slot.text
-				if re.search('[a-zA-Z0-9]', content) is not None:
-					event_raw = re.sub('[;]+', ';', content.replace('\n', ';')).split(';')[1:-1]
-					print(content, event_raw)
-					
+        d = 0
+        for day in days:
+            s = 0
+            for slot in day:
+                slot = BeautifulSoup(str(slot), 'html.parser')
+                content = slot.text
+                if re.search('[a-zA-Z0-9]', content) is not None:
+                    event_raw = re.sub('[;]+', ';', content.replace('\n', ';')).split(';')[1:-1]
 
-					if len(event_raw) is 6:
-						event_structured = {
-							'day': day_index[d],
-							'time': 9 + ((s % 37))*0.25,
-							'duration': int(slot.find('td').get('colspan')) * 15,
-							'weeks': parse_weeks(event_raw[3]),
-							'module': event_raw[0].split('/')[0],
-							'type': event_raw[0].split('/')[1],
-							'group': event_raw[0].split('/')[2],
-							'title': event_raw[2],
-							'staff': event_raw[4],
-							'location': event_raw[5]
-						}
+                    if len(event_raw) is 6:
+                        event_structured = {
+                            'day': day_index[d],
+                            'time': 9 + ((s % 37))*0.25,
+                            'duration': int(slot.find('td').get('colspan')) * 15,
+                            'weeks': parse_weeks(event_raw[3]),
+                            'module': event_raw[0].split('/')[0],
+                            'type': event_raw[0].split('/')[1],
+                            'group': event_raw[0].split('/')[2],
+                            'title': event_raw[2],
+                            'staff': event_raw[4],
+                            'location': event_raw[5]
+                        }
 
-						events.append(event_structured)
-					elif len(event_raw) is 5 and not re.search('[a-zA-Z]', event_raw[2]):
-						event_structured = {
-							'day': day_index[d],
-							'time': 9 + ((s % 37))*0.25,
-							'duration': int(slot.find('td').get('colspan')) * 15,
-							'weeks': parse_weeks(event_raw[2]),
-							'module': event_raw[0].split('/')[0],
-							'type': event_raw[0].split('/')[1],
-							'group': event_raw[0].split('/')[2],
-							'staff': event_raw[3],
-							'location': event_raw[4],
-							'title': None
-						}
+                        events.append(event_structured)
+                    elif len(event_raw) is 5 and not re.search('[a-zA-Z]', event_raw[2]):
+                        event_structured = {
+                            'day': day_index[d],
+                            'time': 9 + ((s % 37))*0.25,
+                            'duration': int(slot.find('td').get('colspan')) * 15,
+                            'weeks': parse_weeks(event_raw[2]),
+                            'module': event_raw[0].split('/')[0],
+                            'type': event_raw[0].split('/')[1],
+                            'group': event_raw[0].split('/')[2],
+                            'staff': event_raw[3],
+                            'location': event_raw[4],
+                            'title': event_raw[2]
+                        }
+                    elif len(event_raw) is 5 and re.search('[a-zA-Z]', event_raw[2]):
+                        event_structured = {
+                            'day': day_index[d],
+                            'time': 9 + ((s % 37))*0.25,
+                            'duration': int(slot.find('td').get('colspan')) * 15,
+                            'weeks': parse_weeks(event_raw[3]),
+                            'module': event_raw[0].split('/')[0],
+                            'type': event_raw[0].split('/')[1],
+                            'group': event_raw[0].split('/')[2],
+                            'staff': event_raw[4],
+                            'title': event_raw[2]
+                        }
 
-						events.append(event_structured)
-					
-					s += int(slot.find('td').get('colspan')) - 1
-				s += 1
-			d += 1
-	return events
+                        events.append(event_structured)
+
+                    s += int(slot.find('td').get('colspan')) - 1
+                s += 1
+            d += 1
+    return events
 
 def find_datetime(week, day, time):
     weeks = {
@@ -153,40 +165,55 @@ def find_datetime(week, day, time):
         '38': datetime(year = 2021, month = 4,   day = 5),
         '39': datetime(year = 2021, month = 4,  day = 12),
         '40': datetime(year = 2021, month = 4,  day = 19),
-	}
+        '41': datetime(year = 2021, month = 4,  day = 26),
+        '42': datetime(year = 2021, month = 5,   day = 3),
+        '43': datetime(year = 2021, month = 5,  day = 10),
+        '44': datetime(year = 2021, month = 5,  day = 17),
+        '45': datetime(year = 2021, month = 5,  day = 24),
+        '46': datetime(year = 2021, month = 5,   day = 31),
+        '47': datetime(year = 2021, month = 6,   day = 7),
+        '48': datetime(year = 2021, month = 6,   day = 14),
+        '49': datetime(year = 2021, month = 6,   day = 21),
+        '50': datetime(year = 2021, month = 6,   day = 28),
+        '51': datetime(year = 2021, month = 7,   day = 5),
+        '52': datetime(year = 2021, month = 6,   day = 12)
+    }
 
-	offset = {
-		'Mon': 0,
-		'Tue': 1,
-		'Wed': 2,
-		'Thu': 3,
-		'Fri': 4
-	}
+    offset = {
+        'Mon': 0,
+        'Tue': 1,
+        'Wed': 2,
+        'Thu': 3,
+        'Fri': 4
+    }
 
-	print(week, day)
-	date = weeks[str(week)]+ timedelta(days=offset[day], hours=time)
-	return date  - (timedelta(hours=1) if not datetime(year=2019, month=10, day=27) < date < datetime(year=2020, month=3, day=29) else timedelta(days=0))
+    print(week, day)
+    date = weeks[str(week)]+ timedelta(days=offset[day], hours=time)
+    return date  - (timedelta(hours=1) if not datetime(year=2020, month=10, day=27) < date < datetime(year=2021, month=3, day=29) else timedelta(days=0))
 
 def add_event(event, c, group=None):
 
-	if group is not None:
-		if group[module['title']] is not module['group']:
-			return c
+    if group is not None:
+        if group[module['title']] is not module['group']:
+            return c
 
-	for week in list(set(event['weeks'])):
-		e = Event()
-		e.name = '{0} {1}'.format(event['module'], event['type'])
-		e.begin = find_datetime(week, event['day'], event['time'])
-		e.duration = timedelta(minutes=event['duration'])
-		e.location = event['location']
-		if not (event['title'] or event['staff'] is None):
-			e.description = '{0} with {1}'.format(event['title'], event['staff'])
-		c.events.add(e)
-	return c
+    for week in list(set(event['weeks'])):
+        e = Event()
+        e.name = '{0} {1}'.format(event['module'], event['type'])
+        e.begin = find_datetime(week, event['day'], event['time'])
+        e.duration = timedelta(minutes=event['duration'])
+        if 'location' in event:
+            e.location = event['location']
+        if not (event['title'] or event['staff'] is None):
+            e.description = '{0} with {1}'.format(event['title'], event['staff'])
+        c.events.add(e)
+    return c
+
 
 def generate_calendar(modules, terms, login, group=None):
-	c = Calendar()
-	events = retrieve(modules, terms, login)
-	for event in events:
-		add_event(event, c, group)
-	return c
+    c = Calendar()
+    events = retrieve(modules, terms, login)
+    #return events
+    for event in events:
+        add_event(event, c, group)
+    return c
