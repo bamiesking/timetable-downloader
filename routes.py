@@ -36,7 +36,7 @@ def help():
     count = None
     with open('users.txt', 'r+') as f:
         count = len(set(f.readlines()))
-    return render_template('timetable/help.html', count=count, title='Timetable Downloader | Help')
+    return render_template('help.html', count=count, title='Timetable Downloader | Help')
 
 @bp.route('/privacy')
 def privacy():

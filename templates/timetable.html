@@ -2,7 +2,7 @@
 {% from "_formhelpers.html" import render_field %}
 
 {% block nav %}
-{% include 'timetable/nav.html' %}
+{% include 'nav.html' %}
 {% endblock %}
 
 {% block content %}
@@ -33,7 +33,7 @@
       <div class="form-group">
         <label for="modules">Modules</label>
         <select multiple class="form-control select" id="modules" placeholder="Select modules" name="modules">
-          {% include 'timetable/modules.html' %}
+          {% include 'modules.html' %}
         </select>
       </div>
       <div class="form-group">
