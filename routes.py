@@ -12,15 +12,15 @@ def index():
     with open('users.txt', 'r+') as f:
         count = len(set(f.readlines()))
     flash('This tool is still in the alpha stage, meaning it has not received enough testing to be sure it runs properly. As such, it might break. Errors in receiving data will be logged, however it is advised you first add the events generated to a separate calendar, check them, and then merge with any existing calendars once you are satisfied with their accuracy.', 'warning')
-    return render_template('timetable/timetable.html', count=count, title='Timetable Downloader', form=form)
+    return render_template('timetable.html', count=count, title='Timetable Downloader', form=form)
 
 @bp.route('/download', methods={'GET', 'POST'})
 def download():
     modules = request.form.getlist('modules')
     terms = request.form.getlist('terms')
     login = {'user': request.form['user'], 'pass': request.form['pass']}
-    print(modules, terms, login)
     c = generate_calendar(modules, terms, login)
+    #return '<html><body><p>{0}</p></body></html>'.format(c)
     try:
         with open('app/timetable/temp/{0}.ics'.format(login['user']), 'w+') as f:
             f.writelines(c)
@@ -43,4 +43,4 @@ def privacy():
     count = None
     with open('users.txt', 'r+') as f:
         count = len(set(f.readlines()))
-    return render_template('timetable/privacy.html', count=count, title='Timetable Downloader | Privacy')
+    return render_template('privacy.html', count=count, title='Timetable Downloader | Privacy')
