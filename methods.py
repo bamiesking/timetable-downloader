@@ -29,8 +29,18 @@ day_index = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 def request(modules, terms, login):
     module_separator = '%0D%0A'
     module_string = module_separator.join(modules) + module_separator
-    terms_string = '' + ('12-21;' if 'mi' in terms else '') + ('26-35;' if 'ep' in terms else '') + ('41-49' if 'ea' in terms else '')
-    url = 'https://timetable.dur.ac.uk/reporting/individual;module;name;{0}?days=1-5&weeks={1}&periods=5-41&template=module+individual&height=100&week=100'.format(module_string, '12-21;26-35;41-49')
+
+    terms_list = []
+    if 'mi' in terms:
+        terms_list.append('12-21')
+    if 'ep' in terms:
+        terms_list.append('26-35')
+    if 'ea' in terms:
+        terms_list.append('41-49')
+    terms_string = ';'.join(terms_list) 
+    url = 'https://timetable.dur.ac.uk/reporting/individual;module;name;{0}?'\
+          'days=1-5&weeks={1}&periods=5-41&template=module+individual'\
+          '&height=100&week=100'.format(module_string, terms_string)
     page = requests.get(url, auth=(login['user'], login['pass']))
     if '<title>401 Unauthorized</title>' in page.text:
         raise AuthError('Bad login')
