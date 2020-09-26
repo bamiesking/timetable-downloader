@@ -27,9 +27,14 @@ day_index = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 
 
 def request(modules, terms, login):
+    '''Sends a request to the unversity website and returns the response
+    as a BeautifulSoup object'''
+    
+    # Join module codes into a string
     module_separator = '%0D%0A'
     module_string = module_separator.join(modules) + module_separator
 
+    # Create string to represent terms selection
     terms_list = []
     if 'mi' in terms:
         terms_list.append('12-21')
@@ -37,13 +42,18 @@ def request(modules, terms, login):
         terms_list.append('26-35')
     if 'ea' in terms:
         terms_list.append('41-49')
-    terms_string = ';'.join(terms_list) 
+    terms_string = ';'.join(terms_list)
+
+    # Constuct URL from the module and terms strings
     url = 'https://timetable.dur.ac.uk/reporting/individual;module;name;{0}?'\
           'days=1-5&weeks={1}&periods=5-41&template=module+individual'\
           '&height=100&week=100'.format(module_string, terms_string)
+
+    # Retrieve response and check whether credentials were valid
     page = requests.get(url, auth=(login['user'], login['pass']))
     if '<title>401 Unauthorized</title>' in page.text:
         raise AuthError('Bad login')
+
     soup = BeautifulSoup(page.text, 'html.parser')
     return soup
 
@@ -64,7 +74,11 @@ def retrieve(modules, terms, login):
     soup = request(modules, terms, login)
     modules = str(soup).split('<hr/>')[:-1]
     for i in range(len(modules)):
-        modules[i] = BeautifulSoup(modules[i].split('<!-- START ROW OUTPUT -->')[1].split('<!-- END ROW OUTPUT -->')[0], 'html.parser')
+        # Trim to content pertaining to the current module
+        module = modules[i].split('<!-- START ROW OUTPUT -->')[1]
+        module = module.split('<!-- END ROW OUTPUT -->')[0]
+        modules[i] = BeautifulSoup(module, 'html.parser')
+
         days = [[], [], [], [], []]
         day = -1
         for row in modules[i].find_all('tr', recursive=False):
@@ -74,32 +88,45 @@ def retrieve(modules, terms, login):
                 else:
                     days[day].append(cell)
 
+        # Keep track of which day of the week we are working on
         d = 0
         for day in days:
+            # Keep track of which 15 minute timeslot we are considering
             s = 0
             for slot in day:
                 slot = BeautifulSoup(str(slot), 'html.parser')
                 content = slot.text
                 if re.search('[a-zA-Z0-9]', content) is not None:
-                    var = re.search('([A-Z]{4}[0-9]+[/[A-Z0-9]*]*)', content)[0].split('/')
+                    # Find entry giving module, session type and group number
+                    expressions = {
+                        'msg': r'([A-Z]{4}[0-9]+[/[A-Z0-9]*]*)',
+                        'staff': r'[A-Z]+[a-z]+,\s[A-Z][a-z]{1,3}[\sA-Z]+',
+                        'location': r'D/\w+',
+                        'weeks': r'([0-9]+((, )[0-9]+)+|[0-9]+ ?- ?[0-9]+)'
+                    }
+                    entry = re.search(expressions['msg'], content)[0]
+                    entry = entry.split('/')
                     module, session, group = (None, None, None)
-                    if len(var) == 3:
-                        group = var[2]
-                    if len(var) >= 2:
-                        session = var[1]
-                    if len(var) >= 1:
-                        module = var[0]
-                    staff = re.search(r'[A-Z]+[a-z]+,\s[A-Z][a-z]{1,3}[\sA-Z]+', content)
+                    if len(entry) == 3:
+                        group = entry[2]
+                    if len(entry) >= 2:
+                        session = entry[1]
+                    if len(entry) >= 1:
+                        module = entry[0]
+                    staff = re.search(expressions['staff'], content)
                     if staff is not None:
                         staff = staff.group()
-                    location = re.search(r'D/\w+', content)
+                    location = re.search(expressions['location'], content)
                     if location is not None:
                         location = location.group()
+                    weeks = re.search(expressions['weeks'], content).group(0)
+
+                    # Combine above fields into our event structure
                     event_structured = {
                         'day': day_index[d],
                         'time': 9 + ((s % 37))*0.25,
                         'duration': int(slot.find('td').get('colspan')) * 15,
-                        'weeks': re.search('([0-9]+((, )[0-9]+)+|[0-9]+ ?- ?[0-9]+)', content).group(0),
+                        'weeks': weeks,
                         'module': module,
                         'type': session,
                         'group': group,
@@ -107,7 +134,7 @@ def retrieve(modules, terms, login):
                         'staff': staff,
                         'location': location
                     }
-                    print('Staff', event_structured['staff'])
+
                     events.append(event_structured)
 
                     s += int(slot.find('td').get('colspan')) - 1
@@ -134,16 +161,14 @@ def make_title(module, session, group=None):
         title = ' '.join([module, session, group])
     return title
 
+
 def find_datetime(week, day, time):
-    date = weeks[str(week)]+ timedelta(days=offset[day], hours=time)
-    return date  - (timedelta(hours=1) if not datetime(year=2020, month=10, day=27) < date < datetime(year=2021, month=3, day=29) else timedelta(days=0))
+    day_of_week = timedelta(days=offset[day], hours=time)
+    date = weeks[str(week)] + day_of_week
+    return date - (timedelta(hours=1) if not datetime(year=2020, month=10, day=27) < date < datetime(year=2021, month=3, day=29) else timedelta(days=0))
+
 
 def add_event(event, c, group=None):
-
-    if group is not None:
-        if group[module['title']] is not module['group']:
-            return c
-
     if re.search('-', event['weeks']) is not None:
         start, end = event['weeks'].split('-')
         event['weeks'] = [i for i in range(int(start), int(end)+1)]
