@@ -7,6 +7,7 @@ bp = Blueprint('timetable', __name__, template_folder='templates')
 
 @bp.route("/")
 def index():
+    session['timetable'] = True
     form = TimetableForm()
     count = None
     with open('users.txt', 'r+') as f:
