@@ -1,4 +1,4 @@
-from flask import render_template, redirect, send_from_directory, Blueprint, flash, request
+from flask import render_template, redirect, send_from_directory, Blueprint, flash, request, session
 from werkzeug.security import generate_password_hash
 from .forms import TimetableForm
 from .methods import generate_calendar, AuthError
