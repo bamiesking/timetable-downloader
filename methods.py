@@ -165,7 +165,7 @@ def make_title(module, session, group=None):
 def find_datetime(week, day, time):
     day_of_week = timedelta(days=offset[day], hours=time)
     date = weeks[str(week)] + day_of_week
-    return date - (timedelta(hours=1) if not datetime(year=2020, month=10, day=27) < date < datetime(year=2021, month=3, day=29) else timedelta(days=0))
+    return date - (timedelta(hours=1) if not datetime(year=2020, month=10, day=25) < date < datetime(year=2021, month=3, day=28) else timedelta(days=0))
 
 
 def add_event(event, c, group=None):
