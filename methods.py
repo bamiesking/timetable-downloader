@@ -154,11 +154,11 @@ def make_title(module, session, group=None):
     if session in sessions:
         session = sessions[session]
     title = None
-    if group is None:
-        title = ' '.join((module, session))
-    else:
+    if group is not None and session is not 'Lecture':
         group = '(Group {})'.format(int(group))
         title = ' '.join([module, session, group])
+    else:
+        title = ' '.join((module, session))
     return title
 
 
