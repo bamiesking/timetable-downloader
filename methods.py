@@ -169,11 +169,12 @@ def find_datetime(week, day, time):
 
 
 def add_event(event, c, group=None):
-    if re.search('-', event['weeks']) is not None:
-        start, end = event['weeks'].split('-')
-        event['weeks'] = [i for i in range(int(start), int(end)+1)]
-    elif re.search(', ', event['weeks']) is not None:
-        event['weeks'] = event['weeks'].split(', ')
+    if isinstance(event['weeks'], str):
+        if re.search('-', event['weeks']) is not None:
+            start, end = event['weeks'].split('-')
+            event['weeks'] = [i for i in range(int(start), int(end)+1)]
+        elif re.search(', ', event['weeks']) is not None:
+            event['weeks'] = event['weeks'].split(', ')
     for week in list(set(event['weeks'])):
         e = Event()
         e.name = event['title']
