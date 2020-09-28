@@ -4,10 +4,19 @@ import re
 from datetime import datetime, timedelta
 from ics import Calendar, Event
 from .utils import weeks, offset
+from sentry_sdk import configure_scope
 
 
 class AuthError(Exception):
     pass
+
+
+def strip_auth_error(event, hint):
+    if 'exc_info' in hint:
+        exc_type, exc_value, tb = hint['exc_info']
+        if isinstance(exc_value, AuthError):
+            return None
+    return event
 
 events = []
 
@@ -29,12 +38,12 @@ day_index = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 def request(modules, terms, login):
     '''Sends a request to the unversity website and returns the response
     as a BeautifulSoup object'''
-    
+
     # Join module codes into a string
     module_separator = '%0D%0A'
     module_string = module_separator.join(modules) + module_separator
 
-    # Create string to represent terms selection
+    # Create string to represent terms selection
     terms_list = []
     if 'mi' in terms:
         terms_list.append('12-21')
@@ -49,7 +58,7 @@ def request(modules, terms, login):
           'days=1-5&weeks={1}&periods=5-41&template=module+individual'\
           '&height=100&week=100'.format(module_string, terms_string)
 
-    # Retrieve response and check whether credentials were valid
+    # Retrieve response and check whether credentials were valid
     page = requests.get(url, auth=(login['user'], login['pass']))
     if '<title>401 Unauthorized</title>' in page.text:
         raise AuthError('Bad login')
@@ -169,7 +178,8 @@ def find_datetime(week, day, time):
 
 
 def add_event(event, c, group=None):
-    if isinstance(event['weeks'], str):
+    #if isinstance(event['weeks'], str):
+    if True:
         if re.search('-', event['weeks']) is not None:
             start, end = event['weeks'].split('-')
             event['weeks'] = [i for i in range(int(start), int(end)+1)]
@@ -189,6 +199,11 @@ def add_event(event, c, group=None):
 
 
 def generate_calendar(modules, terms, login, group=None):
+    with configure_scope() as scope:
+        scope.set_context('request', {
+            'modules': modules,
+            'terms': terms
+            })
     c = Calendar()
     events = retrieve(modules, terms, login)
     for event in events:
