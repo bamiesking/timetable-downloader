@@ -160,6 +160,7 @@ def make_title(module, session, group=None):
     sessions = {
         'WORK': 'Workshop',
         'WORKA': 'Workshop',
+        'WORKB': 'Workshop,
         'LECT': 'Lecture',
         'TUT': 'Tutorial',
         'SEM': 'Seminar'
