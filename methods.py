@@ -109,7 +109,7 @@ def retrieve(modules, terms, login):
                     # Find entry giving module, session type and group number
                     expressions = {
                         'msg': r'([A-Z]{4}[0-9]+[/[A-Z0-9]*]*)',
-                        'staff': r'[A-Z]+[a-z]+,\s[A-Z][a-z]{1,3}[\sA-Z]+',
+                        'staff': r'([A-Z]+[a-z]+-)*[A-Z]+[a-z]+,\s[A-Z][a-z]{1,3}[\sA-Z]+',
                         'location': r'D/\w+',
                         'weeks': r'([0-9]+-?[0-9]*)'
                     }
