@@ -111,7 +111,7 @@ def retrieve(modules, terms, login):
                         'msg': r'([A-Z]{4}[0-9]+[/[A-Z0-9]*]*)',
                         'staff': r'[A-Z]+[a-z]+,\s[A-Z][a-z]{1,3}[\sA-Z]+',
                         'location': r'D/\w+',
-                        'weeks': r'([0-9]+((, )[0-9]+)+|[0-9]+ ?- ?[0-9]+)'
+                        'weeks': r'([0-9]+-?[0-9]*)'
                     }
                     entry = re.search(expressions['msg'], content)[0]
                     entry = entry.split('/')
@@ -128,7 +128,11 @@ def retrieve(modules, terms, login):
                     location = re.search(expressions['location'], content)
                     if location is not None:
                         location = location.group()
-                    weeks = re.search(expressions['weeks'], content).group(0)
+                    weeks = re.findall(expressions['weeks'], content)
+                    if weeks is not None and len(weeks) > 3:
+                        weeks = weeks[3:]
+                    if weeks is not None and len(weeks) <= 3:
+                        weeks = weeks[-1]
 
                     # Combine above fields into our event structure
                     event_structured = {
@@ -163,7 +167,7 @@ def make_title(module, session, group=None):
     if session in sessions:
         session = sessions[session]
     title = None
-    if group is not None and session is not 'Lecture':
+    if group is not None and session != 'Lecture':
         group = '(Group {})'.format(int(group))
         title = ' '.join([module, session, group])
     else:
@@ -178,14 +182,13 @@ def find_datetime(week, day, time):
 
 
 def add_event(event, c, group=None):
-    #if isinstance(event['weeks'], str):
-    if True:
-        if re.search('-', event['weeks']) is not None:
-            start, end = event['weeks'].split('-')
-            event['weeks'] = [i for i in range(int(start), int(end)+1)]
-        elif re.search(', ', event['weeks']) is not None:
-            event['weeks'] = event['weeks'].split(', ')
-    for week in list(set(event['weeks'])):
+    weeks = []
+    if re.search('-', event['weeks']) is not None:
+        start, end = event['weeks'].split('-')
+        weeks += [i for i in range(int(start), int(end)+1)]
+    else:
+        weeks.append(int(event['weeks']))
+    for week in list(set(weeks)):
         e = Event()
         e.name = event['title']
         e.begin = find_datetime(week, event['day'], event['time'])
