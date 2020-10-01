@@ -131,7 +131,7 @@ def retrieve(modules, terms, login):
                     weeks = re.findall(expressions['weeks'], content)
                     if weeks is not None and len(weeks) > 3:
                         weeks = weeks[3:]
-                    if weeks is not None and len(weeks) <= 3:
+                    elif weeks is not None and len(weeks) <= 3:
                         weeks = weeks[-1]
 
                     # Combine above fields into our event structure
@@ -183,11 +183,12 @@ def find_datetime(week, day, time):
 
 def add_event(event, c, group=None):
     weeks = []
-    if re.search('-', event['weeks']) is not None:
-        start, end = event['weeks'].split('-')
-        weeks += [i for i in range(int(start), int(end)+1)]
-    else:
-        weeks.append(int(event['weeks']))
+    for w in event['weeks']:
+        if re.search('-', w) is not None:
+            start, end = w.split('-')
+            weeks += [i for i in range(int(start), int(end)+1)]
+        else:
+            weeks.append(int(w))
     for week in list(set(weeks)):
         e = Event()
         e.name = event['title']
